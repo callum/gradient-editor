@@ -17,69 +17,108 @@ function draw(e) {
   const centerX = Math.round(box.left + (box.width / 2));
   const centerY = Math.round(box.top + (box.height / 2));
 
-  let startX, startY;
-  let endX, endY;
+  const path = {};
 
   switch (direction) {
     case 'top':
-      startX = centerX;
-      startY = Math.round(box.bottom);
-      endX = startX;
-      endY = Math.round(box.top);
+      path.x1 = centerX;
+      path.y1 = box.bottom;
+      path.x2 = path.x1;
+      path.y2 = box.top;
+      break;
+    case 'right top':
+      path.x1 = box.left;
+      path.y1 = box.bottom;
+      path.x2 = box.right;
+      path.y2 = box.top;
       break;
     case 'right':
-      startX = Math.round(box.left);
-      startY = centerY;
-      endX = Math.round(box.right);
-      endY = startY;
+      path.x1 = box.left;
+      path.y1 = centerY;
+      path.x2 = box.right;
+      path.y2 = path.y1;
+      break;
+    case 'right bottom':
+      path.x1 = box.left;
+      path.y1 = box.top;
+      path.x2 = box.right;
+      path.y2 = box.bottom;
+      break;
+    case 'bottom': default:
+      path.x1 = centerX;
+      path.y1 = box.top;
+      path.x2 = path.x1;
+      path.y2 = box.bottom;
+      break;
+    case 'left bottom':
+      path.x1 = box.right;
+      path.y1 = box.top;
+      path.x2 = box.left;
+      path.y2 = box.bottom;
       break;
     case 'left':
-      startX = Math.round(box.right);
-      startY = centerY;
-      endX = Math.round(box.left);
-      endY = startY;
+      path.x1 = box.right;
+      path.y1 = centerY;
+      path.x2 = box.left;
+      path.y2 = path.y1;
       break;
-    default:
-      startX = centerX;
-      startY = Math.round(box.top);
-      endX = startX;
-      endY = Math.round(box.bottom);
+    case 'left top':
+      path.x1 = box.right;
+      path.y1 = box.bottom;
+      path.x2 = box.left;
+      path.y2 = box.top;
+      break;
   }
-
-  const path = new Path2D();
-  path.moveTo(startX, startY);
-  path.lineTo(endX, endY);
 
   ctx.lineWidth = 2;
   ctx.strokeStyle = 'white';
   ctx.shadowColor = 'rgba(0, 0, 0, .3)';
   ctx.shadowOffsetY = 2;
   ctx.shadowBlur = 2;
-  ctx.stroke(path);
 
-  style.colorStops.forEach((color, i, arr) => {
-    const a = new Path2D();
-    const v = (box.height / (arr.length - 1)) * i;
-    const h = (box.width / (arr.length - 1)) * i;
+  ctx.moveTo(path.x1, path.y1);
+  ctx.lineTo(path.x2, path.y2);
+  ctx.stroke();
+
+  style.colorStops.forEach((color, i, stops) => {
+    const vectorX = (box.width / (stops.length - 1)) * i;
+    const vectorY = (box.height / (stops.length - 1)) * i;
 
     let x, y;
 
     switch (direction) {
       case 'top':
-        x = startX;
-        y = Math.round(startY - v);
+        x = path.x1;
+        y = path.y1 - vectorY;
+        break;
+      case 'right top':
+        x = path.x1 + vectorX;
+        y = path.y1 - vectorY;
         break;
       case 'right':
-        x = Math.round(startX + h);
-        y = startY;
+        x = path.x1 + vectorX;
+        y = path.y1;
+        break;
+      case 'right bottom':
+        x = path.x1 + vectorX;
+        y = path.y1 + vectorY;
+        break;
+      case 'bottom': default:
+        x = path.x1;
+        y = path.y1 + vectorY;
+        break;
+      case 'left bottom':
+        x = path.x1 + vectorX;
+        y = path.y1 + vectorY;
         break;
       case 'left':
-        x = Math.round(startX - h);
-        y = startY;
+        x = path.x1 - vectorX;
+        y = path.y1;
         break;
-      default:
-        x = startX;
-        y = Math.round(startY + v);
+      case 'left top':
+        x = path.x1 - vectorX;
+        y = path.y1 - vectorY;
+        break;
     }
 
     let radius = 6;
@@ -91,10 +130,11 @@ function draw(e) {
       }
     }
 
-    a.arc(x, y, radius, 0, Math.PI * 2, false);
     ctx.fillStyle = color.value;
-    ctx.fill(a);
-    ctx.stroke(a);
+    ctx.beginPath();
+    ctx.arc(x, y, radius, 0, Math.PI * 2, false);
+    ctx.fill();
+    ctx.stroke();
   });
 }
 
