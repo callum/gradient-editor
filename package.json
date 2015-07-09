@@ -1,0 +1,17 @@
+{
+  "name": "gradient-editor",
+  "version": "0.0.0",
+  "main": "index.js",
+  "scripts": {
+    "build": "browserify index.js -t babelify -o build.js",
+    "start": "watchify index.js -t babelify -o build.js",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "license": "MIT",
+  "dependencies": {
+    "babelify": "^6.1.2",
+    "browserify": "^10.2.4",
+    "gradient-parser": "^0.1.5",
+    "watchify": "^3.2.3"
+  }
+}
