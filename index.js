@@ -1,4 +1,5 @@
 import gradient from 'gradient-parser';
+import collide from 'point-circle-collision';
 
 const target = document.getElementById('target');
 const canvas = document.getElementById('canvas');
@@ -123,11 +124,8 @@ function draw(e) {
 
     let radius = 6;
 
-    if (e instanceof MouseEvent) {
-      if (e.pageX > (x - radius) && e.pageX < (x + radius) &&
-          e.pageY > (y - radius) && e.pageY < (y + radius)) {
-        radius = 10;
-      }
+    if (e && collide([e.pageX, e.pageY], [x, y], radius)) {
+      radius = 10;
     }
 
     ctx.fillStyle = color.value;

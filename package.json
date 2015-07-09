@@ -12,6 +12,7 @@
     "babelify": "^6.1.2",
     "browserify": "^10.2.4",
     "gradient-parser": "^0.1.5",
+    "point-circle-collision": "^1.0.3",
     "watchify": "^3.2.3"
   }
 }
