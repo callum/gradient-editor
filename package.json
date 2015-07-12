@@ -3,14 +3,14 @@
   "version": "0.0.0",
   "main": "index.js",
   "scripts": {
-    "build": "browserify index.js -t babelify -o build.js",
-    "start": "watchify index.js -t babelify -o build.js",
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "build": "for file in background.js content.js devtools.js injected.js sidebar-pane.js; do browserify src/$file -t [ babelify --stage 0 ] -o dist/$file & done",
+    "start": "for file in background.js content.js devtools.js injected.js sidebar-pane.js; do watchify src/$file -t [ babelify --stage 0 ] -o dist/$file & done; wait"
   },
   "license": "MIT",
   "dependencies": {
     "babelify": "^6.1.2",
     "browserify": "^10.2.4",
+    "color-conversions": "^0.1.2",
     "gradient-parser": "^0.1.5",
     "point-circle-collision": "^1.0.3",
     "watchify": "^3.2.3"
