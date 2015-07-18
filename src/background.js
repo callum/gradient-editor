@@ -23,7 +23,7 @@ function initSidebarConnection(port) {
       sidebarConnections[tabId] = port;
 
       port.onDisconnect.addListener(() => {
-        contentConnections[tabId].postMessage({ type: 'CLEANUP' });
+        contentConnections[tabId].postMessage({ type: 'TERMINATE' });
         delete sidebarConnections[tabId];
       });
     }

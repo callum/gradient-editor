@@ -3,15 +3,28 @@
 <head>
 <title></title>
 <style>
-div {
-  margin: 100px auto;
-  width: 400px;
-  height: 400px;
-  background: linear-gradient(blue, green, yellow, red);
+html, body {
+  height: 100%;
+  margin: 0;
+}
+
+body {
+  display: flex;
+}
+
+#test {
+  width: 300px;
+  height: 200px;
+  margin: auto;
+  background: linear-gradient(to top right, blue, yellow, green, red);
+  background: linear-gradient(to bottom right, blue, yellow, green, red);
+  background: linear-gradient(to bottom left, blue, yellow, green, red);
+  background: linear-gradient(to top left, blue, yellow, green, orange, red);
 }
 </style>
 </head>
 <body>
-<div></div>
+<div id="test"></div>
+<script src="dist/injected.js"></script>
 </body>
 </html>

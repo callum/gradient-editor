@@ -1,7 +1,27 @@
 import parser from 'gradient-parser';
 import collide from 'point-circle-collision';
+import angle from './lib/angle';
 
 let canvas, draw;
+
+function getPoints(rect, gradientAngle) {
+  const centerX = rect.left + (rect.width / 2);
+  const centerY = rect.top + (rect.height / 2);
+  const radians = angle.toRadians(gradientAngle);
+  const perpendicularRadians = angle.toRadians(angle.abs(gradientAngle - 90));
+
+  const gradientLinelength =
+    Math.abs(rect.width * Math.sin(radians)) +
+    Math.abs(rect.height * Math.cos(radians));
+
+  const w = (Math.cos(perpendicularRadians) * gradientLinelength) / 2;
+  const h = (Math.sin(perpendicularRadians) * gradientLinelength) / 2;
+
+  return {
+    x1: centerX - w, y1: centerY - h,
+    x2: centerX + w, y2: centerY + h
+  };
+}
 
 function createCanvas() {
   canvas = document.createElement('canvas');
@@ -10,8 +30,6 @@ function createCanvas() {
   canvas.style.position = 'absolute';
   canvas.style.top = '0';
   canvas.style.left = '0';
-  canvas.style.width = '100%';
-  canvas.style.height = '100%';
   canvas.style.zIndex = '1000';
 
   return canvas;
@@ -27,10 +45,9 @@ function cleanup() {
   }
 }
 
-function main() {
+function main(target) {
   cleanup();
 
-  const target = $0;
   const styles = getComputedStyle(target);
 
   if (styles.backgroundImage === 'none') {
@@ -45,67 +62,24 @@ function main() {
     canvas.height = window.innerHeight;
 
     const ctx = canvas.getContext('2d');
-    const box = target.getBoundingClientRect();
+    const rect = target.getBoundingClientRect();
 
-    const direction = gradient.orientation && gradient.orientation.value;
+    const { orientation, colorStops } = gradient;
 
-    const center = {
-      x: box.left + (box.width / 2),
-      y: box.top + (box.height / 2)
-    };
+    let gradientAngle = 180;
 
-    const path = {};
-
-    switch (direction) {
-      case 'top':
-        path.x1 = center.x;
-        path.y1 = box.bottom;
-        path.x2 = path.x1;
-        path.y2 = box.top;
-        break;
-      case 'right top':
-        path.x1 = box.left;
-        path.y1 = box.bottom;
-        path.x2 = box.right;
-        path.y2 = box.top;
-        break;
-      case 'right':
-        path.x1 = box.left;
-        path.y1 = center.y;
-        path.x2 = box.right;
-        path.y2 = path.y1;
-        break;
-      case 'right bottom':
-        path.x1 = box.left;
-        path.y1 = box.top;
-        path.x2 = box.right;
-        path.y2 = box.bottom;
-        break;
-      case 'bottom': default:
-        path.x1 = center.x;
-        path.y1 = box.top;
-        path.x2 = path.x1;
-        path.y2 = box.bottom;
-        break;
-      case 'left bottom':
-        path.x1 = box.right;
-        path.y1 = box.top;
-        path.x2 = box.left;
-        path.y2 = box.bottom;
-        break;
-      case 'left':
-        path.x1 = box.right;
-        path.y1 = center.y;
-        path.x2 = box.left;
-        path.y2 = path.y1;
-        break;
-      case 'left top':
-        path.x1 = box.right;
-        path.y1 = box.bottom;
-        path.x2 = box.left;
-        path.y2 = box.top;
-        break;
+    if (orientation) {
+      switch (orientation.type) {
+        case 'directional':
+          gradientAngle = angle.fromDirection(rect, orientation.value);
+          break;
+        case 'angular':
+          gradientAngle = parseInt(gradient.orientation.value, 10);
+          break;
+      }
     }
+
+    const points = getPoints(rect, gradientAngle);
 
     ctx.lineWidth = 2;
     ctx.strokeStyle = 'white';
@@ -113,53 +87,16 @@ function main() {
     ctx.shadowBlur = 2;
     ctx.shadowOffsetY = 2;
 
-    ctx.moveTo(path.x1, path.y1);
-    ctx.lineTo(path.x2, path.y2);
+    ctx.beginPath();
+    ctx.moveTo(points.x1, points.y1);
+    ctx.lineTo(points.x2, points.y2);
     ctx.stroke();
 
     gradient.colorStops.forEach((stop, i, stops) => {
-      const length = stops.length - 1;
-      const v = {
-        x: (box.width / length) * i,
-        y: (box.height / length) * i
-      };
-
-      let x, y;
-
-      switch (direction) {
-        case 'top':
-          x = path.x1;
-          y = path.y1 - v.y;
-          break;
-        case 'right top':
-          x = path.x1 + v.x;
-          y = path.y1 - v.y;
-          break;
-        case 'right':
-          x = path.x1 + v.x;
-          y = path.y1;
-          break;
-        case 'right bottom':
-          x = path.x1 + v.x;
-          y = path.y1 + v.y;
-          break;
-        case 'bottom': default:
-          x = path.x1;
-          y = path.y1 + v.y;
-          break;
-        case 'left bottom':
-          x = path.x1 + v.x;
-          y = path.y1 + v.y;
-          break;
-        case 'left':
-          x = path.x1 - v.x;
-          y = path.y1;
-          break;
-        case 'left top':
-          x = path.x1 - v.x;
-          y = path.y1 - v.y;
-          break;
-      }
+      const deltaX = ((points.x2 - points.x1) / (stops.length - 1)) * i;
+      const deltaY = ((points.y2 - points.y1) / (stops.length - 1)) * i;
+      const x = points.x1 + deltaX;
+      const y = points.y1 + deltaY;
 
       let radius = 6;
 
@@ -191,15 +128,19 @@ function main() {
   draw();
 }
 
+window.test = () => main(document.getElementById('test'));
+
 window.addEventListener('message', (e) => {
+  console.log(e);
+
   const payload = e.data;
 
   switch (payload.type) {
     case 'INITIALIZE':
-      main();
+      main($0);
       break;
 
-    case 'CLEANUP':
+    case 'TERMINATE':
       cleanup();
       break;
   }
