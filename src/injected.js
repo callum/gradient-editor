@@ -1,27 +1,11 @@
 import parser from 'gradient-parser';
 import collide from 'point-circle-collision';
-import angle from './lib/angle';
+
+import ColorStops from './lib/color-stops';
+import LinearGradient from './lib/linear-gradient';
+import RadialGradient from './lib/radial-gradient';
 
 let canvas, draw;
-
-function getPoints(rect, gradientAngle) {
-  const centerX = rect.left + (rect.width / 2);
-  const centerY = rect.top + (rect.height / 2);
-  const radians = angle.toRadians(gradientAngle);
-  const perpendicularRadians = angle.toRadians(angle.abs(gradientAngle - 90));
-
-  const gradientLinelength =
-    Math.abs(rect.width * Math.sin(radians)) +
-    Math.abs(rect.height * Math.cos(radians));
-
-  const w = (Math.cos(perpendicularRadians) * gradientLinelength) / 2;
-  const h = (Math.sin(perpendicularRadians) * gradientLinelength) / 2;
-
-  return {
-    x1: centerX - w, y1: centerY - h,
-    x2: centerX + w, y2: centerY + h
-  };
-}
 
 function createCanvas() {
   canvas = document.createElement('canvas');
@@ -50,9 +34,7 @@ function main(target) {
 
   const styles = getComputedStyle(target);
 
-  if (styles.backgroundImage === 'none') {
-    return;
-  }
+  if (styles.backgroundImage === 'none') return;
 
   const gradient = parser.parse(styles.backgroundImage)[0];
   const canvas = createCanvas();
@@ -64,22 +46,8 @@ function main(target) {
     const ctx = canvas.getContext('2d');
     const rect = target.getBoundingClientRect();
 
-    const { orientation, colorStops } = gradient;
-
-    let gradientAngle = 180;
-
-    if (orientation) {
-      switch (orientation.type) {
-        case 'directional':
-          gradientAngle = angle.fromDirection(rect, orientation.value);
-          break;
-        case 'angular':
-          gradientAngle = parseInt(gradient.orientation.value, 10);
-          break;
-      }
-    }
-
-    const points = getPoints(rect, gradientAngle);
+    const linearGradient = new LinearGradient(rect, gradient.orientation);
+    const points = linearGradient.getGradientLinePoints();
 
     ctx.lineWidth = 2;
     ctx.strokeStyle = 'white';
@@ -92,9 +60,12 @@ function main(target) {
     ctx.lineTo(points.x2, points.y2);
     ctx.stroke();
 
-    gradient.colorStops.forEach((stop, i, stops) => {
-      const deltaX = ((points.x2 - points.x1) / (stops.length - 1)) * i;
-      const deltaY = ((points.y2 - points.y1) / (stops.length - 1)) * i;
+    const colorStops = new ColorStops(gradient.colorStops);
+    const lengths = colorStops.resolveLengths();
+
+    colorStops.colorStops.forEach((stop, i) => {
+      const deltaX = (((points.x2 - points.x1) * lengths[i]) / 100);
+      const deltaY = (((points.y2 - points.y1) * lengths[i]) / 100);
       const x = points.x1 + deltaX;
       const y = points.y1 + deltaY;
 
@@ -128,7 +99,7 @@ function main(target) {
   draw();
 }
 
-window.test = () => main(document.getElementById('test'));
+main(document.getElementById('test'));
 
 window.addEventListener('message', (e) => {
   console.log(e);
