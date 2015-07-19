@@ -3,8 +3,11 @@
   "version": "0.0.0",
   "main": "index.js",
   "scripts": {
-    "build": "for file in background.js content.js devtools.js injected.js sidebar-pane.js; do browserify src/$file -t [ babelify --stage 0 ] -o dist/$file & done",
-    "start": "for file in background.js content.js devtools.js injected.js sidebar-pane.js; do watchify src/$file -t [ babelify --stage 0 ] -o dist/$file & done; wait"
+    "build": "for file in background.js content.js devtools.js injected.js sidebar-pane.js; do browserify src/$file -o dist/$file & done",
+    "start": "for file in background.js content.js devtools.js injected.js sidebar-pane.js; do watchify src/$file -o dist/$file & done; wait"
+  },
+  "browserify": {
+    "transform": [["babelify", { "stage": 0 }]]
   },
   "license": "MIT",
   "dependencies": {
