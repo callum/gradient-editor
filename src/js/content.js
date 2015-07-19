@@ -1,8 +1,8 @@
 import parser from 'gradient-parser';
 import collide from 'point-circle-collision';
-import actionTypes from './lib/action-types';
-import { getLengths, resolveLengths } from './lib/color-stops';
-import { getAngle, getGradientLineLength, getGradientLinePoints } from './lib/linear-gradient';
+import actions from './lib/actions';
+import * as colorStops from './lib/color-stops';
+import * as linearGradient from './lib/linear-gradient';
 
 let canvas, draw;
 
@@ -43,8 +43,6 @@ function main(target) {
 
   canvas = createCanvas();
 
-  const { orientation, colorStops } = gradient;
-
   draw = (e) => {
     canvas.width = window.innerWidth;
     canvas.height = window.innerHeight;
@@ -52,10 +50,9 @@ function main(target) {
     const ctx = canvas.getContext('2d');
     const rect = target.getBoundingClientRect();
 
-    const angle = getAngle(rect, orientation);
-    const length = getGradientLineLength(rect, angle);
-
-    const p = getGradientLinePoints(rect, angle, length);
+    const a = linearGradient.getAngle(rect, gradient.orientation);
+    const l = linearGradient.getGradientLineLength(rect, a);
+    const p = linearGradient.getGradientLinePoints(rect, a, l);
 
     ctx.lineWidth = 2;
     ctx.strokeStyle = 'white';
@@ -68,11 +65,11 @@ function main(target) {
     ctx.lineTo(p.x2, p.y2);
     ctx.stroke();
 
-    const lengths = resolveLengths(getLengths(colorStops), length);
+    const resolved = colorStops.resolve(gradient.colorStops, l);
 
-    colorStops.forEach((stop, i) => {
-      const deltaX = (((p.x2 - p.x1) * lengths[i]) / 100);
-      const deltaY = (((p.y2 - p.y1) * lengths[i]) / 100);
+    gradient.colorStops.forEach((stop, i) => {
+      const deltaX = (((p.x2 - p.x1) * resolved[i]) / 100);
+      const deltaY = (((p.y2 - p.y1) * resolved[i]) / 100);
       const x = p.x1 + deltaX;
       const y = p.y1 + deltaY;
 
@@ -80,7 +77,6 @@ function main(target) {
 
       if (e && collide([e.pageX, e.pageY], [x, y], radius)) {
         radius = 10;
-        window.postMessage({ stop }, '*');
       }
 
       ctx.fillStyle = 'white';
@@ -110,7 +106,7 @@ chrome.runtime.onMessage.addListener(payload => {
   const { action } = payload;
 
   switch (action) {
-    case actionTypes.TERMINATE:
+    case actions.TERMINATE:
       cleanup();
       break;
   }

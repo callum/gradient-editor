@@ -1,4 +1,4 @@
-import actionTypes from './lib/action-types';
+import actions from './lib/actions';
 
 function selectElement() {
   const opts = { useContentScriptContext: true };
@@ -11,7 +11,7 @@ function selectElement() {
 chrome.devtools.panels.elements.createSidebarPane('Gradients', sidebar => {
   const { tabId } = chrome.devtools.inspectedWindow;
 
-  sidebar.setPage('sidebar-pane.html');
+  sidebar.setPage('src/sidebar.html');
   sidebar.setHeight('100ex');
 
   const listener = () => {
@@ -20,7 +20,7 @@ chrome.devtools.panels.elements.createSidebarPane('Gradients', sidebar => {
 
   const port = chrome.runtime.connect({ name: 'devtools' });
 
-  port.postMessage({ tabId, action: actionTypes.INITIALIZE });
+  port.postMessage({ tabId, action: actions.INITIALIZE });
 
   sidebar.onShown.addListener(() => {
     selectElement();
@@ -28,7 +28,7 @@ chrome.devtools.panels.elements.createSidebarPane('Gradients', sidebar => {
   });
 
   sidebar.onHidden.addListener(() => {
-    port.postMessage({ tabId, action: actionTypes.TERMINATE });
+    port.postMessage({ tabId, action: actions.TERMINATE });
     chrome.devtools.panels.elements.onSelectionChanged.removeListener(listener);
   });
 });

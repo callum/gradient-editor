@@ -1,12 +1,12 @@
 {
   "manifest_version": 2,
-  "name": "Gradient editor",
-  "description": "A tool for editing CSS gradients",
+  "name": "Gradient Editor",
+  "description": "Enhanced editing of CSS gradients",
   "version": "0.0.0",
   "permissions": [
     "<all_urls>"
   ],
-  "devtools_page": "devtools.html",
+  "devtools_page": "src/devtools.html",
   "background": {
     "scripts": ["dist/background.js"]
   }

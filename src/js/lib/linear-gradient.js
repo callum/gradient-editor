@@ -1,4 +1,4 @@
-import { abs, fromCoords, toRadians } from './angle';
+import * as a from './angle';
 
 export function getAngle(rect, orientation) {
   if (orientation) {
@@ -20,31 +20,31 @@ export function getDirectionalAngle(rect, orientation) {
     case 'top':
       return 0;
     case 'right top':
-      return abs(fromCoords(left, bottom, right, top) + 90);
+      return a.abs(a.fromCoords(left, bottom, right, top) + 90);
     case 'right':
       return 90;
     case 'right bottom':
-      return abs(fromCoords(left, top, right, bottom) - 90);
+      return a.abs(a.fromCoords(left, top, right, bottom) - 90);
     case 'bottom':
       return 180;
     case 'left bottom':
-      return abs(fromCoords(right, top, left, bottom) + 90);
+      return a.abs(a.fromCoords(right, top, left, bottom) + 90);
     case 'left':
       return 270;
     case 'left top':
-      return abs(fromCoords(right, bottom, left, top) - 90);
+      return a.abs(a.fromCoords(right, bottom, left, top) - 90);
   }
 }
 
 export function getGradientLineLength(rect, angle) {
-  const radians = toRadians(angle);
+  const radians = a.toRadians(angle);
 
   return Math.abs(rect.width * Math.sin(radians)) +
          Math.abs(rect.height * Math.cos(radians));
 }
 
 export function getGradientLinePoints(rect, angle, gradientLinelength) {
-  const perpendicularRadians = toRadians(abs(angle - 90));
+  const perpendicularRadians = a.toRadians(a.abs(angle - 90));
 
   const width = (Math.cos(perpendicularRadians) * gradientLinelength) / 2;
   const height = (Math.sin(perpendicularRadians) * gradientLinelength) / 2;
