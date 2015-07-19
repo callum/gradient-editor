@@ -87,7 +87,7 @@ function main(target) {
       ctx.arc(x, y, radius + 3, 0, Math.PI * 2, false);
       ctx.fill();
 
-      ctx.fillStyle = stop.value;
+      ctx.fillStyle = colorStops.getStopColorValue(stop);
       ctx.shadowColor = null;
       ctx.shadowBlur = null;
       ctx.shadowOffsetY = null;

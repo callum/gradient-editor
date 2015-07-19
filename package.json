@@ -1,10 +1,19 @@
 {
   "name": "gradient-editor",
   "version": "0.0.0",
-  "main": "index.js",
+  "license": "MIT",
   "scripts": {
     "build": "for file in background.js content.js devtools.js sidebar.js; do browserify src/js/$file -o dist/$file & done",
     "start": "for file in background.js content.js devtools.js sidebar.js; do watchify src/js/$file -o dist/$file & done; wait"
+  },
+  "dependencies": {
+    "babelify": "^6.1.2",
+    "browserify": "^10.2.4",
+    "color-conversions": "^0.1.2",
+    "gradient-parser": "^0.1.5",
+    "keymirror": "^0.1.1",
+    "point-circle-collision": "^1.0.3",
+    "watchify": "^3.2.3"
   },
   "browserify": {
     "transform": [
@@ -15,15 +24,5 @@
         }
       ]
     ]
-  },
-  "license": "MIT",
-  "dependencies": {
-    "babelify": "^6.1.2",
-    "browserify": "^10.2.4",
-    "color-conversions": "^0.1.2",
-    "gradient-parser": "^0.1.5",
-    "keymirror": "^0.1.1",
-    "point-circle-collision": "^1.0.3",
-    "watchify": "^3.2.3"
   }
 }
