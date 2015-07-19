@@ -7,9 +7,9 @@ export function getAngle(rect, orientation) {
         return getDirectionalAngle(rect, orientation);
       case 'angular':
         return parseInt(orientation.value, 10);
-      default:
-        return 180;
     }
+  } else {
+    return 180;
   }
 }
 
