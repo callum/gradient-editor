@@ -2,7 +2,7 @@ import parser from 'gradient-parser';
 import collide from 'point-circle-collision';
 
 import { getLengths, resolveLengths } from './lib/color-stops';
-import { getAngle, getGradientLinePoints } from './lib/linear-gradient';
+import { getAngle, getGradientLineLength, getGradientLinePoints } from './lib/linear-gradient';
 
 let canvas, draw;
 
@@ -45,7 +45,10 @@ function main(target) {
     const ctx = canvas.getContext('2d');
     const rect = target.getBoundingClientRect();
 
-    const points = getGradientLinePoints(rect, getAngle(rect, orientation));
+    const angle = getAngle(rect, orientation);
+    const length = getGradientLineLength(rect, angle);
+
+    const p = getGradientLinePoints(rect, angle, length);
 
     ctx.lineWidth = 2;
     ctx.strokeStyle = 'white';
@@ -54,17 +57,17 @@ function main(target) {
     ctx.shadowOffsetY = 2;
 
     ctx.beginPath();
-    ctx.moveTo(points.x1, points.y1);
-    ctx.lineTo(points.x2, points.y2);
+    ctx.moveTo(p.x1, p.y1);
+    ctx.lineTo(p.x2, p.y2);
     ctx.stroke();
 
-    const lengths = resolveLengths(getLengths(colorStops));
+    const lengths = resolveLengths(getLengths(colorStops), length);
 
     colorStops.forEach((stop, i) => {
-      const deltaX = (((points.x2 - points.x1) * lengths[i]) / 100);
-      const deltaY = (((points.y2 - points.y1) * lengths[i]) / 100);
-      const x = points.x1 + deltaX;
-      const y = points.y1 + deltaY;
+      const deltaX = (((p.x2 - p.x1) * lengths[i]) / 100);
+      const deltaY = (((p.y2 - p.y1) * lengths[i]) / 100);
+      const x = p.x1 + deltaX;
+      const y = p.y1 + deltaY;
 
       let radius = 6;
 

@@ -43,9 +43,8 @@ export function getGradientLineLength(rect, angle) {
          Math.abs(rect.height * Math.cos(radians));
 }
 
-export function getGradientLinePoints(rect, angle) {
+export function getGradientLinePoints(rect, angle, gradientLinelength) {
   const perpendicularRadians = toRadians(abs(angle - 90));
-  const gradientLinelength = getGradientLineLength(rect, angle);
 
   const width = (Math.cos(perpendicularRadians) * gradientLinelength) / 2;
   const height = (Math.sin(perpendicularRadians) * gradientLinelength) / 2;
