@@ -41,6 +41,7 @@ export function resolveLengths(stops, gradientLineLength) {
 
     if (currLength) {
       if (currLength < prevLength) {
+        prev--;
         return prevLength;
       } else {
         prev = i;

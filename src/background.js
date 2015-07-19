@@ -1,45 +1,23 @@
-const contentConnections = {};
-const sidebarConnections = {};
-
-function initContentConnection(port) {
-  const tabId = port.sender.tab.id;
-
-  contentConnections[tabId] = port;
-
-  port.onDisconnect.addListener(() => {
-    delete contentConnections[tabId];
-  });
-
-  port.onMessage.addListener(payload => {
-    sidebarConnections[tabId].postMessage(payload);
-  });
-}
-
-function initSidebarConnection(port) {
-  port.onMessage.addListener(payload => {
-    const tabId = payload.tabId;
-
-    if (payload.type === 'INITIALIZE') {
-      sidebarConnections[tabId] = port;
-
-      port.onDisconnect.addListener(() => {
-        contentConnections[tabId].postMessage({ type: 'TERMINATE' });
-        delete sidebarConnections[tabId];
-      });
-    }
-
-    contentConnections[tabId].postMessage(payload);
-  });
-}
+import actionTypes from './lib/action-types';
 
 chrome.runtime.onConnect.addListener(port => {
-  switch (port.name) {
-    case 'content':
-      initContentConnection(port);
-      break;
+  const listener = (payload) => {
+    const { tabId, action } = payload;
 
-    case 'sidebar':
-      initSidebarConnection(port);
-      break;
-  }
+    switch (action) {
+      case actionTypes.INITIALIZE:
+        chrome.tabs.executeScript(tabId, { file: 'dist/content.js' });
+
+        port.onDisconnect.addListener(() => {
+          chrome.tabs.sendMessage(tabId, { action: actionTypes.TERMINATE });
+          port.onMessage.removeListener(listener);
+        });
+
+        break;
+      default:
+        chrome.tabs.sendMessage(tabId, payload);
+    }
+  };
+
+  port.onMessage.addListener(listener);
 });
