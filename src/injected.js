@@ -1,9 +1,8 @@
 import parser from 'gradient-parser';
 import collide from 'point-circle-collision';
 
-import ColorStops from './lib/color-stops';
-import LinearGradient from './lib/linear-gradient';
-import RadialGradient from './lib/radial-gradient';
+import { getLengths, resolveLengths } from './lib/color-stops';
+import { getAngle, getGradientLinePoints } from './lib/linear-gradient';
 
 let canvas, draw;
 
@@ -36,8 +35,8 @@ function main(target) {
 
   if (styles.backgroundImage === 'none') return;
 
-  const gradient = parser.parse(styles.backgroundImage)[0];
   const canvas = createCanvas();
+  const { orientation, colorStops } = parser.parse(styles.backgroundImage)[0];
 
   draw = (e) => {
     canvas.width = window.innerWidth;
@@ -46,8 +45,7 @@ function main(target) {
     const ctx = canvas.getContext('2d');
     const rect = target.getBoundingClientRect();
 
-    const linearGradient = new LinearGradient(rect, gradient.orientation);
-    const points = linearGradient.getGradientLinePoints();
+    const points = getGradientLinePoints(rect, getAngle(rect, orientation));
 
     ctx.lineWidth = 2;
     ctx.strokeStyle = 'white';
@@ -60,10 +58,9 @@ function main(target) {
     ctx.lineTo(points.x2, points.y2);
     ctx.stroke();
 
-    const colorStops = new ColorStops(gradient.colorStops);
-    const lengths = colorStops.resolveLengths();
+    const lengths = resolveLengths(getLengths(colorStops));
 
-    colorStops.colorStops.forEach((stop, i) => {
+    colorStops.forEach((stop, i) => {
       const deltaX = (((points.x2 - points.x1) * lengths[i]) / 100);
       const deltaY = (((points.y2 - points.y1) * lengths[i]) / 100);
       const x = points.x1 + deltaX;
